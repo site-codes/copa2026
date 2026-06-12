@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copa 2026 - Palpites dos Membros</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="header glass-card">
+            <div class="header-top">
+                <h1>⚽ RESENHA DOS PALPITEIROS 🏆</h1>
+                <div class="current-date" id="currentDate"></div>
+            </div>
+            <div class="sub">Copa do Mundo 2026 — Faça seus palpites!</div>
+            <div id="userHeader" class="user-header"></div>
+        </div>
+
+        <div id="authContainer" class="auth-section glass-card">
+            <div class="user-controls">
+                <div class="input-group">
+                    <label>👤 SEU NOME</label>
+                    <input type="text" id="usernameInput" placeholder="Digite seu nome" maxlength="20">
+                </div>
+                <button id="loginBtn">➡️ ENTRAR / CRIAR CONTA</button>
+            </div>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="dashboard">
+                <div>
+                    <div class="matches-panel glass-card">
+                        <div class="section-title">📅 JOGOS DISPONÍVEIS PARA PALPITAR</div>
+                        <div id="matchesList">Carregando jogos...</div>
+                        <div class="small-note">* Acerto exato: 10pts | Vencedor/Empate: 5pts | Mesma diferença: 2pts</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="ranking-panel glass-card">
+                        <div class="section-title">🏅 RANKING GERAL</div>
+                        <div id="rankingContainer">Carregando ranking...</div>
+                    </div>
+                    
+                    <div class="bets-panel glass-card">
+                        <div class="section-title">👀 PALPITES E RESULTADOS</div>
+                        <div id="betsContainer" class="bets-view">Carregando palpites...</div>
+                    </div>
+                </div>
+            </div>
+            <button id="logoutBtn" class="logout-button">🚪 SAIR DA CONTA</button>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>

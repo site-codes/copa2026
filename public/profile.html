@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Membro - Copa 2026</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .profile-page { max-width: 1000px; margin: 0 auto; }
+        .back-home-btn { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none; padding: 10px 24px; border-radius: var(--border-radius-full); cursor: pointer; font-weight: 600; transition: all var(--transition-fast); display: inline-flex; align-items: center; gap: 8px; }
+        .back-home-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05); }
+        .back-admin-btn { background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: none; padding: 10px 24px; border-radius: var(--border-radius-full); cursor: pointer; font-weight: 600; transition: all var(--transition-fast); display: inline-flex; align-items: center; gap: 8px; }
+        .back-admin-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05); }
+        .header-buttons { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .profile-stats-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-xl); }
+        .all-bets-list { max-height: 500px; overflow-y: auto; }
+        .profile-bet-item { background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); }
+        .no-data { text-align: center; padding: var(--spacing-xl); color: var(--text-muted); }
+        .profile-bet-match { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .profile-bet-match img { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; }
+        .profile-bet-score { font-weight: bold; color: var(--primary-color); }
+        .profile-bet-info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.75rem; }
+        .profile-bet-status { padding: 2px 8px; border-radius: 20px; }
+        .profile-bet-status.exact { background: rgba(0, 229, 160, 0.2); color: var(--success); }
+        .profile-bet-status.winner { background: rgba(255, 179, 71, 0.2); color: var(--warning); }
+        .profile-bet-status.diff { background: rgba(91, 160, 255, 0.2); color: var(--info); }
+        .profile-bet-status.wrong { background: rgba(255, 107, 107, 0.2); color: var(--error); }
+        .profile-bet-status.no-bet { background: rgba(192, 192, 192, 0.15); color: var(--text-muted); }
+        .profile-bet-status.pending { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
+        
+        .stat-card { text-align: center; padding: var(--spacing-md); background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-md); border-left: 3px solid var(--text-muted); }
+        .stat-card.exact { border-left-color: var(--success); }
+        .stat-card.winner { border-left-color: var(--warning); }
+        .stat-card.diff { border-left-color: var(--info); }
+        .stat-card.wrong { border-left-color: var(--error); }
+        .stat-card.no-bet { border-left-color: var(--text-muted); }
+        .stat-value { font-size: 2rem; font-weight: bold; color: var(--primary-color); }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); margin-top: var(--spacing-xs); }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: var(--border-radius-full);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: 0.8rem;
+        }
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: var(--text-dark);
+        }
+        .filter-btn:hover {
+            background: rgba(255, 111, 97, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container profile-page">
+        <div class="header glass-card">
+            <div class="header-top">
+                <h1>👤 PERFIL DO MEMBRO</h1>
+                <div class="header-buttons" id="headerButtons"></div>
+            </div>
+            <div class="sub" id="profileUsername">Carregando...</div>
+        </div>
+
+        <div id="profileContent">
+            <div class="loading">Carregando perfil...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentFilter = 'all'; // all, exact, winner, diff, wrong, no-bet
+        
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        
+        function getFromParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('from');
+        }
+
+        async function loadProfile() {
+            const username = getUrlParam('user');
+            const from = getFromParam();
+            
+            if (!username) {
+                document.getElementById('profileContent').innerHTML = '<div class="warning">Usuário não especificado</div>';
+                return;
+            }
+            
+            document.getElementById('profileUsername').textContent = `@${username}`;
+            
+            const headerButtons = document.getElementById('headerButtons');
+            if (from === 'admin') {
+                headerButtons.innerHTML = '<button class="back-admin-btn" onclick="window.location.href=\'/admin.html\'">🛠️ VOLTAR PARA ADMIN</button>';
+            } else {
+                headerButtons.innerHTML = '<button class="back-home-btn" onclick="window.location.href=\'/\'">🏠 VOLTAR PARA HOME</button>';
+            }
+            
+            try {
+                // Buscar todos os matches e resultados para mostrar jogos sem palpite
+                const [profileRes, matchesRes, resultsRes, allBetsRes] = await Promise.all([
+                    fetch(`${API_URL}/profile/${username}`),
+                    fetch(`${API_URL}/matches`),
+                    fetch(`${API_URL}/results`),
+                    fetch(`${API_URL}/all-bets`)
+                ]);
+                
+                const profileData = await profileRes.json();
+                const matches = (await matchesRes.json()).matches || [];
+                const results = (await resultsRes.json()).results || {};
+                const allBets = (await allBetsRes.json()).bets || {};
+                
+                if (!profileData.success) {
+                    document.getElementById('profileContent').innerHTML = `<div class="warning">${profileData.error || 'Erro ao carregar perfil'}</div>`;
+                    return;
+                }
+                
+                const profile = profileData.profile;
+                
+                // Criar lista completa de todos os jogos (com ou sem palpite)
+                const allMatchesWithStatus = [];
+                let exactCount = profile.stats.exact;
+                let winnerCount = profile.stats.winner;
+                let diffCount = profile.stats.diff;
+                let wrongCount = profile.stats.wrong;
+                let noBetCount = 0;
+                
+                for (const match of matches) {
+                    const hasBet = allBets[match.id] && allBets[match.id][username];
+                    const bet = hasBet ? allBets[match.id][username] : null;
+                    const result = results[match.id];
+                    const hasResult = !!result;
+                    
+                    let points = 0;
+                    let type = 'pendente';
+                    let statusClass = 'pending';
+                    let statusIcon = '⏳';
+                    let statusText = 'Aguardando resultado';
+                    
+                    if (hasResult) {
+                        if (!hasBet) {
+                            // Não palpitou em jogo que já tem resultado
+                            type = 'nao_palpitou';
+                            statusClass = 'no-bet';
+                            statusIcon = '⚪';
+                            statusText = 'NÃO PALPITOU! 0pts';
+                            noBetCount++;
+                        } else {
+                            // Tem palpite e tem resultado
+                            const betHome = parseInt(bet.home);
+                            const betAway = parseInt(bet.away);
+                            const realHome = parseInt(result.home);
+                            const realAway = parseInt(result.away);
+                            
+                            if (betHome === realHome && betAway === realAway) {
+                                points = 10;
+                                type = 'exato';
+                                statusClass = 'exact';
+                                statusIcon = '✅';
+                                statusText = `EXATO! +10pts (${bet.home}x${bet.away} = ${result.home}x${result.away})`;
+                            } else {
+                                const betWinner = betHome > betAway ? "home" : (betAway > betHome ? "away" : "draw");
+                                const realWinner = realHome > realAway ? "home" : (realAway > realHome ? "away" : "draw");
+                                
+                                if (betWinner === realWinner) {
+                                    points = 5;
+                                    type = 'vencedor';
+                                    statusClass = 'winner';
+                                    statusIcon = '🎯';
+                                    statusText = `VENCEDOR! +5pts (Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away})`;
+                                } else {
+                                    const betDiff = Math.abs(betHome - betAway);
+                                    const realDiff = Math.abs(realHome - realAway);
+                                    
+                                    if ((betHome > betAway && realHome > realAway && betDiff === realDiff) ||
+                                        (betAway > betHome && realAway > realHome && betDiff === realDiff)) {
+                                        points = 2;
+                                        type = 'diferenca';
+                                        statusClass = 'diff';
+                                        statusIcon = '📊';
+                                        statusText = `DIFERENÇA! +2pts (Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away})`;
+                                    } else {
+                                        points = 0;
+                                        type = 'erro';
+                                        statusClass = 'wrong';
+                                        statusIcon = '❌';
+                                        statusText = `ERROU! 0pts (Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away})`;
+                                    }
+                                }
+                            }
+                        }
+                    } else if (hasBet && !hasResult) {
+                        // Tem palpite mas aguarda resultado
+                        type = 'pendente';
+                        statusClass = 'pending';
+                        statusIcon = '⏳';
+                        statusText = `Aguardando resultado (Palpite: ${bet.home}x${bet.away})`;
+                    } else {
+                        // Não tem palpite e não tem resultado
+                        type = 'sem_palpite';
+                        statusClass = 'pending';
+                        statusIcon = '⚪';
+                        statusText = 'Sem palpite (aguardando jogo)';
+                    }
+                    
+                    allMatchesWithStatus.push({
+                        match: match,
+                        bet: bet,
+                        result: result,
+                        hasBet: hasBet,
+                        hasResult: hasResult,
+                        points: points,
+                        type: type,
+                        statusClass: statusClass,
+                        statusIcon: statusIcon,
+                        statusText: statusText
+                    });
+                }
+                
+                // Ordenar por data (mais recentes primeiro)
+                allMatchesWithStatus.sort((a, b) => {
+                    if (!a.match.date) return 1;
+                    if (!b.match.date) return -1;
+                    const [dayA, monthA, yearA] = a.match.date.split('/');
+                    const [dayB, monthB, yearB] = b.match.date.split('/');
+                    const dateA = new Date(yearA, monthA - 1, dayA);
+                    const dateB = new Date(yearB, monthB - 1, dayB);
+                    return dateB - dateA;
+                });
+                
+                // Filtrar baseado no filtro selecionado
+                let filteredMatches = allMatchesWithStatus;
+                if (currentFilter === 'exact') {
+                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'exato');
+                } else if (currentFilter === 'winner') {
+                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'vencedor');
+                } else if (currentFilter === 'diff') {
+                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'diferenca');
+                } else if (currentFilter === 'wrong') {
+                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'erro');
+                } else if (currentFilter === 'no-bet') {
+                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'nao_palpitou');
+                }
+                
+                const totalPoints = profile.totalPoints;
+                
+                let statsHtml = `
+                    <div class="profile-stats-page">
+                        <div class="stat-card exact"><div class="stat-value">${exactCount}</div><div class="stat-label">Acertos Exatos (10pts)</div></div>
+                        <div class="stat-card winner"><div class="stat-value">${winnerCount}</div><div class="stat-label">Acertos Vencedor (5pts)</div></div>
+                        <div class="stat-card diff"><div class="stat-value">${diffCount}</div><div class="stat-label">Acertos Diferença (2pts)</div></div>
+                        <div class="stat-card wrong"><div class="stat-value">${wrongCount}</div><div class="stat-label">Palpites Errados</div></div>
+                        <div class="stat-card no-bet"><div class="stat-value">${noBetCount}</div><div class="stat-label">Jogos sem Palpite</div></div>
+                        <div class="stat-card"><div class="stat-value">${totalPoints}</div><div class="stat-label">Pontos Totais</div></div>
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">📋 TODOS</button>
+                        <button class="filter-btn ${currentFilter === 'exact' ? 'active' : ''}" onclick="setFilter('exact')">✅ EXATOS (10pts)</button>
+                        <button class="filter-btn ${currentFilter === 'winner' ? 'active' : ''}" onclick="setFilter('winner')">🎯 VENCEDOR (5pts)</button>
+                        <button class="filter-btn ${currentFilter === 'diff' ? 'active' : ''}" onclick="setFilter('diff')">📊 DIFERENÇA (2pts)</button>
+                        <button class="filter-btn ${currentFilter === 'wrong' ? 'active' : ''}" onclick="setFilter('wrong')">❌ ERRADOS</button>
+                        <button class="filter-btn ${currentFilter === 'no-bet' ? 'active' : ''}" onclick="setFilter('no-bet')">⚪ SEM PALPITE</button>
+                    </div>
+                `;
+                
+                if (filteredMatches.length === 0) {
+                    statsHtml += `<div class="no-data">📝 Nenhum jogo encontrado com este filtro</div>`;
+                } else {
+                    statsHtml += `<div class="glass-card" style="padding: 20px;"><div class="section-title">📋 HISTÓRICO COMPLETO (${filteredMatches.length} jogos)</div><div class="all-bets-list">`;
+                    
+                    filteredMatches.forEach(item => {
+                        statsHtml += `
+                            <div class="profile-bet-item" style="border-left: 4px solid var(--${item.statusClass === 'exact' ? 'success' : item.statusClass === 'winner' ? 'warning' : item.statusClass === 'diff' ? 'info' : item.statusClass === 'wrong' ? 'error' : 'text-muted'});">
+                                <div class="profile-bet-match">
+                                    <strong>${item.match.home}</strong>
+                                    <img src="${item.match.homeFlag}" onerror="this.src='https://flagcdn.com/w320/un.png'">
+                                    ${item.hasBet ? `<span class="profile-bet-score">${item.bet.home} x ${item.bet.away}</span>` : '<span class="profile-bet-score">? x ?</span>'}
+                                    <img src="${item.match.awayFlag}" onerror="this.src='https://flagcdn.com/w320/un.png'">
+                                    <strong>${item.match.away}</strong>
+                                </div>
+                                <div class="profile-bet-info">
+                                    <span class="profile-bet-date">📅 ${item.match.date || 'Data não definida'} às ${item.match.time || '--:--'}</span>
+                                    ${item.hasResult ? `<span class="profile-bet-real">📊 Real: ${item.result.home} x ${item.result.away}</span>` : ''}
+                                    <span class="profile-bet-status ${item.statusClass}">${item.statusIcon} ${item.statusText}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    statsHtml += `</div></div>`;
+                }
+                
+                document.getElementById('profileContent').innerHTML = statsHtml;
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('profileContent').innerHTML = '<div class="warning">Erro ao carregar perfil</div>';
+            }
+        }
+        
+        window.setFilter = function(filter) {
+            currentFilter = filter;
+            loadProfile();
+        };
+        
+        loadProfile();
+    </script>
+</body>
+</html>

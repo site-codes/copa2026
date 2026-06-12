@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gerenciar Copa 2026</title>
+    <link rel="stylesheet" href="/admin-style.css">
+    <style>
+        .edit-match-btn { background: var(--warning); margin-right: 8px; }
+        .edit-match-btn:hover { background: #e67e22; }
+        .view-profile-btn { background: var(--info); margin-right: 8px; }
+        .view-profile-btn:hover { background: #1976D2; }
+        .delete-match-btn { background: #8B0000; margin-top: 8px; }
+        .delete-match-btn:hover { background: #a00000; }
+        .view-all-btn { background: linear-gradient(135deg, #4f46e5, #4338ca); }
+        .view-all-btn:hover { background: linear-gradient(135deg, #4338ca, #3730a3); }
+        
+        .match-item {
+            transition: all 0.3s ease;
+        }
+        .match-item.has-result {
+            border-left: 4px solid #3b82f6;
+            border-right: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .match-item.has-result:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #60a5fa;
+        }
+        .match-item.no-result {
+            border-left: 4px solid #f97316;
+            border-right: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(249, 115, 22, 0.05);
+        }
+        .match-item.no-result:hover {
+            background: rgba(249, 115, 22, 0.1);
+            border-left-color: #fb923c;
+        }
+        
+        .match-score.has-result-score {
+            color: #ffffff;
+            font-weight: bold;
+            background: rgba(59, 130, 246, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .match-score.no-result-score {
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+        
+        .all-matches-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 3000;
+        }
+        .all-matches-modal-content {
+            background: linear-gradient(135deg, #111827, #0f172a);
+            border-radius: 24px; padding: 30px; width: 90%; max-width: 900px;
+            max-height: 85vh; overflow-y: auto;
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+        }
+        .all-matches-modal-content h3 {
+            margin-bottom: 20px; color: var(--primary-color);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .all-matches-list {
+            max-height: 65vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .close-modal-btn {
+            background: var(--danger);
+            padding: 8px 20px;
+        }
+        
+        .edit-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px);
+            display: flex; justify-content: center; align-items: center; z-index: 4000;
+        }
+        .edit-modal-content {
+            background: linear-gradient(135deg, #111827, #0f172a);
+            border-radius: 24px; padding: 30px; width: 90%; max-width: 500px;
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+        }
+        .edit-modal-content h3 { margin-bottom: 20px; color: var(--primary-color); }
+        .edit-modal-content label { display: block; margin: 15px 0 5px; font-size: 0.8rem; color: var(--text-secondary); }
+        .score-row { display: flex; gap: 15px; margin: 15px 0; }
+        .score-row div { flex: 1; }
+        .score-row input { text-align: center; font-size: 1.2rem; font-weight: bold; }
+        .edit-modal-actions { display: flex; gap: 10px; margin-top: 25px; }
+        .edit-modal-actions button { flex: 1; }
+        .save-edit-btn { background: var(--success); }
+        .cancel-edit-btn { background: var(--danger); }
+        
+        .current-user-rank {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(6, 182, 212, 0.1));
+            border: 1px solid var(--primary); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+        }
+        .rank-number.top-1 { color: #ffd700; text-shadow: 0 0 5px #ffd700; }
+        .rank-number.top-2 { color: #c0c0c0; }
+        .rank-number.top-3 { color: #cd7f32; }
+        
+        .user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        .matches-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>🔐 Área Restrita</h2>
+            <input type="password" id="adminPassword" placeholder="Senha do Admin">
+            <button id="adminLoginBtn" style="margin-top: 20px;">Entrar</button>
+            <div class="small-note" style="margin-top: 10px;">Senha padrão: admin123</div>
+        </div>
+    </div>
+
+    <div id="adminContent" style="display: none;">
+        <div class="admin-container">
+            <div class="admin-header">
+                <div class="header glass-card" style="flex:1; margin-right: 20px;">
+                    <h1>🛠️ Painel do Administrador</h1>
+                    <div class="sub">Gerenciar jogos, resultados e membros</div>
+                </div>
+                <button id="btnSair" class="btn-sair">🚪 SAIR</button>
+                <button id="btnMembros" style="background: #4CAF50;">👥 VER MEMBROS</button>
+            </div>
+
+            <div class="match-form glass-card">
+                <div class="section-title">➕ CADASTRAR NOVO JOGO</div>
+                <div class="team-selector">
+                    <div class="team-field">
+                        <label>🏠 TIME DA CASA</label>
+                        <div class="position-relative">
+                            <div class="team-input-wrapper">
+                                <img id="homeFlagDisplay" class="selected-flag-img" src="https://flagcdn.com/w320/br.png" onclick="openFlagPicker('home')">
+                                <input type="text" id="newHome" placeholder="Digite o nome do time" autocomplete="off">
+                            </div>
+                            <div id="homeSuggestions" class="auto-suggest" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="team-field">
+                        <label>✈️ TIME VISITANTE</label>
+                        <div class="position-relative">
+                            <div class="team-input-wrapper">
+                                <img id="awayFlagDisplay" class="selected-flag-img" src="https://flagcdn.com/w320/fr.png" onclick="openFlagPicker('away')">
+                                <input type="text" id="newAway" placeholder="Digite o nome do time" autocomplete="off">
+                            </div>
+                            <div id="awaySuggestions" class="auto-suggest" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="date" id="newDate">
+                    <input type="time" id="newTime">
+                    <button id="addMatchBtn" style="background: #4CAF50;">➕ ADICIONAR JOGO</button>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+                <div class="matches-header">
+                    <div class="section-title" style="margin-bottom: 0;">📋 ÚLTIMOS 10 JOGOS</div>
+                    <button id="viewAllMatchesBtn" class="view-all-btn">📊 VER TODOS OS JOGOS</button>
+                </div>
+                <div id="matchesListAdmin"></div>
+            </div>
+
+            <div class="users-panel glass-card">
+                <div class="section-title">👥 MEMBROS E PONTUAÇÕES</div>
+                <div id="usersListAdmin"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="flagPickerOverlay" class="overlay"></div>
+    <div id="flagPicker" class="flag-picker">
+        <div class="search-box"><input type="text" id="flagSearch" placeholder="🔍 Buscar seleção..."></div>
+        <div id="flagsGrid" class="flags-grid"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentPickerType = null;
+        
+         const teamsData = [
+        { flag: "https://flagcdn.com/w320/ca.png", name: "Canadá" },
+        { flag: "https://flagcdn.com/w320/us.png", name: "EUA" },
+        { flag: "https://flagcdn.com/w320/mx.png", name: "México" },
+        { flag: "https://flagcdn.com/w320/za.png", name: "África do Sul" },
+        { flag: "https://flagcdn.com/w320/de.png", name: "Alemanha" },
+        { flag: "https://flagcdn.com/w320/sa.png", name: "Arábia Saudita" },
+        { flag: "https://flagcdn.com/w320/dz.png", name: "Argélia" },
+        { flag: "https://flagcdn.com/w320/ar.png", name: "Argentina" },
+        { flag: "https://flagcdn.com/w320/au.png", name: "Austrália" },
+        { flag: "https://flagcdn.com/w320/at.png", name: "Áustria" },
+        { flag: "https://flagcdn.com/w320/be.png", name: "Bélgica" },
+        { flag: "https://flagcdn.com/w320/ba.png", name: "Bósnia e Herzegovina" },
+        { flag: "https://flagcdn.com/w320/br.png", name: "Brasil" },
+        { flag: "https://flagcdn.com/w320/cv.png", name: "Cabo Verde" },
+        { flag: "https://flagcdn.com/w320/qa.png", name: "Catar" },
+        { flag: "https://flagcdn.com/w320/cl.png", name: "Chile" },
+        { flag: "https://flagcdn.com/w320/co.png", name: "Colômbia" },
+        { flag: "https://flagcdn.com/w320/cr.png", name: "Costa Rica" },
+        { flag: "https://flagcdn.com/w320/ci.png", name: "Costa do Marfim" },
+        { flag: "https://flagcdn.com/w320/hr.png", name: "Croácia" },
+        { flag: "https://flagcdn.com/w320/cw.png", name: "Curaçau" },
+        { flag: "https://flagcdn.com/w320/eg.png", name: "Egito" },
+        { flag: "https://flagcdn.com/w320/ec.png", name: "Equador" },
+        { flag: "https://flagcdn.com/w320/gb-sct.png", name: "Escócia" },
+        { flag: "https://flagcdn.com/w320/es.png", name: "Espanha" },
+        { flag: "https://flagcdn.com/w320/fr.png", name: "França" },
+        { flag: "https://flagcdn.com/w320/gh.png", name: "Gana" },
+        { flag: "https://flagcdn.com/w320/ht.png", name: "Haiti" },
+        { flag: "https://flagcdn.com/w320/nl.png", name: "Holanda" },
+        { flag: "https://flagcdn.com/w320/gb-eng.png", name: "Inglaterra" },
+        { flag: "https://flagcdn.com/w320/iq.png", name: "Iraque" },
+        { flag: "https://flagcdn.com/w320/ir.png", name: "Irã" },
+        { flag: "https://flagcdn.com/w320/it.png", name: "Itália" },
+        { flag: "https://flagcdn.com/w320/jp.png", name: "Japão" },
+        { flag: "https://flagcdn.com/w320/jo.png", name: "Jordânia" },
+        { flag: "https://flagcdn.com/w320/ma.png", name: "Marrocos" },
+        { flag: "https://flagcdn.com/w320/no.png", name: "Noruega" },
+        { flag: "https://flagcdn.com/w320/nz.png", name: "Nova Zelândia" },
+        { flag: "https://flagcdn.com/w320/pa.png", name: "Panamá" },
+        { flag: "https://flagcdn.com/w320/py.png", name: "Paraguai" },
+        { flag: "https://flagcdn.com/w320/pe.png", name: "Peru" },
+        { flag: "https://flagcdn.com/w320/pt.png", name: "Portugal" },
+        { flag: "https://flagcdn.com/w320/cd.png", name: "RD do Congo" },
+        { flag: "https://flagcdn.com/w320/kr.png", name: "República da Coreia" },
+        { flag: "https://flagcdn.com/w320/sn.png", name: "Senegal" },
+        { flag: "https://flagcdn.com/w320/rs.png", name: "Sérvia" },
+        { flag: "https://flagcdn.com/w320/se.png", name: "Suécia" },
+        { flag: "https://flagcdn.com/w320/ch.png", name: "Suíça" },
+        { flag: "https://flagcdn.com/w320/cz.png", name: "Tchéquia" },
+        { flag: "https://flagcdn.com/w320/tn.png", name: "Tunísia" },
+        { flag: "https://flagcdn.com/w320/tr.png", name: "Turquia" },
+        { flag: "https://flagcdn.com/w320/uy.png", name: "Uruguai" },
+        { flag: "https://flagcdn.com/w320/uz.png", name: "Uzbequistão" }
+    ];
+
+        
+        const FALLBACK_FLAG = "https://flagcdn.com/w320/un.png";
+        let currentMatches = [];
+
+        function openFlagPicker(type) {
+            currentPickerType = type;
+            const picker = document.getElementById('flagPicker');
+            const overlay = document.getElementById('flagPickerOverlay');
+            renderFlagGrid('');
+            picker.style.display = 'grid';
+            overlay.style.display = 'block';
+            document.getElementById('flagSearch').oninput = (e) => renderFlagGrid(e.target.value);
+        }
+
+        function renderFlagGrid(searchTerm) {
+            const grid = document.getElementById('flagsGrid');
+            const filtered = teamsData.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            grid.innerHTML = filtered.map(team => `
+                <div class="flag-option" onclick="selectFlag('${team.flag}', '${team.name}')">
+                    <img src="${team.flag}"><span>${team.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectFlag(flagUrl, teamName) {
+            if (currentPickerType === 'home') {
+                document.getElementById('homeFlagDisplay').src = flagUrl;
+                document.getElementById('newHome').value = teamName;
+            } else {
+                document.getElementById('awayFlagDisplay').src = flagUrl;
+                document.getElementById('newAway').value = teamName;
+            }
+            closeFlagPicker();
+        }
+
+        function closeFlagPicker() {
+            document.getElementById('flagPicker').style.display = 'none';
+            document.getElementById('flagPickerOverlay').style.display = 'none';
+        }
+
+        function setupAutoSearch(inputId, flagDisplayId, suggestionsId) {
+            const input = document.getElementById(inputId);
+            const flagDisplay = document.getElementById(flagDisplayId);
+            const suggestionsDiv = document.getElementById(suggestionsId);
+            
+            input.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                if (term.length < 2) { suggestionsDiv.style.display = 'none'; return; }
+                const matches = teamsData.filter(t => t.name.toLowerCase().includes(term)).slice(0, 8);
+                if (matches.length === 0) { suggestionsDiv.style.display = 'none'; return; }
+                suggestionsDiv.innerHTML = matches.map(team => `
+                    <div class="suggest-item" onclick="selectTeamFromSearch('${team.name}', '${team.flag}', '${inputId}', '${flagDisplayId}', '${suggestionsId}')">
+                        <img src="${team.flag}"><span>${team.name}</span>
+                    </div>
+                `).join('');
+                suggestionsDiv.style.display = 'block';
+            });
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) suggestionsDiv.style.display = 'none';
+            });
+        }
+        
+        function selectTeamFromSearch(teamName, teamFlag, inputId, flagDisplayId, suggestionsId) {
+            document.getElementById(inputId).value = teamName;
+            document.getElementById(flagDisplayId).src = teamFlag;
+            document.getElementById(suggestionsId).style.display = 'none';
+        }
+
+        async function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            const response = await fetch(`${API_URL}/admin/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            const data = await response.json();
+            if (data.success) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                await loadMatches();
+                await loadUsers();
+            } else alert('Senha incorreta!');
+        }
+
+        async function loadMatches() {
+            const response = await fetch(`${API_URL}/admin/all-matches`);
+            const data = await response.json();
+            if (data.success) {
+                currentMatches = data.matches;
+                renderMatchesList(currentMatches);
+            }
+        }
+
+        async function loadUsers() {
+            const [usersRes, rankingRes] = await Promise.all([
+                fetch(`${API_URL}/users`),
+                fetch(`${API_URL}/ranking/details`)
+            ]);
+            const usersData = await usersRes.json();
+            const rankingData = await rankingRes.json();
+            if (usersData.success && rankingData.success) {
+                renderUsersList(usersData.users, rankingData.ranking);
+            }
+        }
+
+        function parseMatchDate(match) {
+            if (!match.date) return new Date(0);
+            const [day, month, year] = match.date.split('/');
+            const [hour, minute] = (match.time || '00:00').split(':');
+            return new Date(year, month - 1, day, hour, minute);
+        }
+
+        function renderMatchItem(match, hasResult, currentResult, formattedDateForInput, results) {
+            const resultClass = hasResult ? 'has-result' : 'no-result';
+            const scoreClass = hasResult ? 'has-result-score' : 'no-result-score';
+            const scoreDisplay = hasResult ? `${currentResult.home} x ${currentResult.away}` : '? x ?';
+            
+            return `
+                <div class="match-item ${resultClass}">
+                    <div class="match-info">
+                        <div class="team-flags">
+                            <strong>${match.home}</strong>
+                            <img src="${match.homeFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
+                            <span class="match-score ${scoreClass}">${scoreDisplay}</span>
+                            <img src="${match.awayFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
+                            <strong>${match.away}</strong>
+                        </div>
+                        <div>📅 ${match.date || 'Data não definida'} às ${match.time || '--:--'}</div>
+                    </div>
+                    <div class="match-actions">
+                        <button class="edit-match-btn" onclick="openEditModal('${match.id}', '${match.home}', '${match.away}', '${match.homeFlag}', '${match.awayFlag}', '${formattedDateForInput}', '${match.time || ''}', ${hasResult ? currentResult.home : 'null'}, ${hasResult ? currentResult.away : 'null'})">✏️ EDITAR JOGO</button>
+                        <button onclick="deleteMatch('${match.id}')" class="delete-match-btn">🗑️ REMOVER JOGO</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function renderMatchesList(matches) {
+            const container = document.getElementById('matchesListAdmin');
+            const resultsRes = await fetch(`${API_URL}/results`);
+            const results = (await resultsRes.json()).results || {};
+            
+            if (!matches.length) { container.innerHTML = '<div class="warning">Nenhum jogo cadastrado</div>'; return; }
+            
+            const sortedMatches = [...matches].sort((a, b) => {
+                const dateA = parseMatchDate(a);
+                const dateB = parseMatchDate(b);
+                return dateB - dateA;
+            });
+            
+            const last10Matches = sortedMatches.slice(0, 10);
+            
+            container.innerHTML = last10Matches.map(match => {
+                const hasResult = results[match.id];
+                const currentResult = hasResult ? results[match.id] : null;
+                
+                let formattedDateForInput = '';
+                if (match.date) {
+                    const [day, month, year] = match.date.split('/');
+                    formattedDateForInput = `${year}-${month}-${day}`;
+                }
+                
+                return renderMatchItem(match, hasResult, currentResult, formattedDateForInput, results);
+            }).join('');
+        }
+
+        window.openAllMatchesModal = async function() {
+            const resultsRes = await fetch(`${API_URL}/results`);
+            const results = (await resultsRes.json()).results || {};
+            
+            const sortedMatches = [...currentMatches].sort((a, b) => {
+                const dateA = parseMatchDate(a);
+                const dateB = parseMatchDate(b);
+                return dateB - dateA;
+            });
+            
+            const modal = document.createElement('div');
+            modal.className = 'all-matches-modal';
+            
+            let matchesHtml = '';
+            sortedMatches.forEach(match => {
+                const hasResult = results[match.id];
+                const currentResult = hasResult ? results[match.id] : null;
+                
+                let formattedDateForInput = '';
+                if (match.date) {
+                    const [day, month, year] = match.date.split('/');
+                    formattedDateForInput = `${year}-${month}-${day}`;
+                }
+                
+                const resultClass = hasResult ? 'has-result' : 'no-result';
+                const scoreClass = hasResult ? 'has-result-score' : 'no-result-score';
+                const scoreDisplay = hasResult ? `${currentResult.home} x ${currentResult.away}` : '? x ?';
+                
+                matchesHtml += `
+                    <div class="match-item ${resultClass}" style="margin-bottom: 10px;">
+                        <div class="match-info">
+                            <div class="team-flags">
+                                <strong>${match.home}</strong>
+                                <img src="${match.homeFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
+                                <span class="match-score ${scoreClass}">${scoreDisplay}</span>
+                                <img src="${match.awayFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
+                                <strong>${match.away}</strong>
+                            </div>
+                            <div>📅 ${match.date || 'Data não definida'} às ${match.time || '--:--'}</div>
+                        </div>
+                        <div class="match-actions">
+                            <button class="edit-match-btn" onclick="editMatchFromModal('${match.id}', '${match.home}', '${match.away}', '${match.homeFlag}', '${match.awayFlag}', '${formattedDateForInput}', '${match.time || ''}', ${hasResult ? currentResult.home : 'null'}, ${hasResult ? currentResult.away : 'null'})">✏️ EDITAR</button>
+                            <button onclick="deleteMatchFromModal('${match.id}')" class="delete-match-btn">🗑️ REMOVER</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            modal.innerHTML = `
+                <div class="all-matches-modal-content">
+                    <h3>
+                        📋 TODOS OS JOGOS CADASTRADOS (${sortedMatches.length})
+                        <button class="close-modal-btn" onclick="this.closest('.all-matches-modal').remove()">✕ FECHAR</button>
+                    </h3>
+                    <div class="all-matches-list">
+                        ${matchesHtml || '<div class="warning">Nenhum jogo cadastrado</div>'}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+        
+        window.editMatchFromModal = function(id, home, away, homeFlag, awayFlag, date, time, homeScore, awayScore) {
+            document.querySelector('.all-matches-modal')?.remove();
+            openEditModal(id, home, away, homeFlag, awayFlag, date, time, homeScore, awayScore);
+        };
+        
+        window.deleteMatchFromModal = async function(matchId) {
+            if (!confirm('Remover este jogo? Isso também remove todos os palpites relacionados.')) return;
+            const response = await fetch(`${API_URL}/admin/delete-match/${matchId}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) { 
+                alert('Jogo e palpites removidos!'); 
+                document.querySelector('.all-matches-modal')?.remove();
+                await loadMatches();
+                await loadUsers();
+            } else alert('Erro ao remover');
+        };
+
+        window.openEditModal = function(id, home, away, homeFlag, awayFlag, date, time, currentHomeScore, currentAwayScore) {
+            const modal = document.createElement('div');
+            modal.className = 'edit-modal';
+            modal.innerHTML = `
+                <div class="edit-modal-content">
+                    <h3>✏️ Editar Jogo</h3>
+                    <label>🏠 TIME DA CASA</label>
+                    <input type="text" id="editHome" placeholder="Time da Casa" value="${home}">
+                    <label>✈️ TIME VISITANTE</label>
+                    <input type="text" id="editAway" placeholder="Time Visitante" value="${away}">
+                    <label>📅 DATA</label>
+                    <input type="date" id="editDate" value="${date}">
+                    <label>⏰ HORA</label>
+                    <input type="time" id="editTime" value="${time}">
+                    <label>🏆 PLACAR (opcional - deixe vazio se não houver resultado)</label>
+                    <div class="score-row">
+                        <div><input type="number" id="editHomeScore" placeholder="Gols Casa" min="0" value="${currentHomeScore !== 'null' ? currentHomeScore : ''}"></div>
+                        <div><input type="number" id="editAwayScore" placeholder="Gols Fora" min="0" value="${currentAwayScore !== 'null' ? currentAwayScore : ''}"></div>
+                    </div>
+                    <div class="edit-modal-actions">
+                        <button class="save-edit-btn" onclick="saveEditMatch('${id}')">💾 SALVAR</button>
+                        <button class="cancel-edit-btn" onclick="this.closest('.edit-modal').remove()">❌ CANCELAR</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+        
+        window.saveEditMatch = async function(id) {
+            const home = document.getElementById('editHome').value;
+            const away = document.getElementById('editAway').value;
+            const dateInput = document.getElementById('editDate').value;
+            const time = document.getElementById('editTime').value;
+            const homeScore = document.getElementById('editHomeScore').value;
+            const awayScore = document.getElementById('editAwayScore').value;
+            
+            let formattedDate = '';
+            if (dateInput) {
+                const [year, month, day] = dateInput.split('-');
+                formattedDate = `${day}/${month}/${year}`;
+            }
+            
+            const updateResponse = await fetch(`${API_URL}/admin/update-match/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ home, away, date: formattedDate, time })
+            });
+            
+            const updateData = await updateResponse.json();
+            if (!updateData.success) {
+                alert('❌ Erro ao atualizar jogo: ' + updateData.error);
+                return;
+            }
+            
+            if (homeScore !== '' && awayScore !== '') {
+                const resultResponse = await fetch(`${API_URL}/admin/result`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matchId: id, homeScore: parseInt(homeScore), awayScore: parseInt(awayScore) })
+                });
+                const resultData = await resultResponse.json();
+                if (!resultData.success) {
+                    alert('⚠️ Jogo atualizado, mas erro ao registrar resultado: ' + resultData.error);
+                } else {
+                    alert('✅ Jogo e resultado atualizados com sucesso!');
+                }
+            } else {
+                alert('✅ Jogo atualizado com sucesso!');
+            }
+            
+            document.querySelector('.edit-modal')?.remove();
+            await loadMatches();
+            await loadUsers();
+        };
+async function renderUsersList(users, ranking) {
+    const container = document.getElementById('usersListAdmin');
+    if (!users.length) { container.innerHTML = '<div class="warning">Nenhum membro cadastrado</div>'; return; }
+    
+    const currentMatchIds = currentMatches.map(m => m.id);
+    const resultsRes = await fetch(`${API_URL}/results`);
+    const results = (await resultsRes.json()).results || {};
+    
+    container.innerHTML = ranking.map(user => {
+        const details = user.details || {};
+        
+        // Criar lista de todos os jogos com resultado
+        const allMatchDetails = [];
+        
+        for (const matchId in results) {
+            if (currentMatchIds.includes(matchId)) {
+                const detail = details[matchId];
+                const match = currentMatches.find(m => m.id === matchId);
+                
+                if (match) {
+                    let colorClass = '';
+                    let typeText = '';
+                    let points = 0;
+                    
+                    if (detail) {
+                        points = detail.points || 0;
+                        if (detail.type === 'exato') { colorClass = 'correct'; typeText = 'exato'; }
+                        else if (detail.type === 'vencedor') { colorClass = 'partial'; typeText = 'vencedor'; }
+                        else if (detail.type === 'diferenca') { colorClass = 'partial'; typeText = 'diferenca'; }
+                        else if (detail.type === 'erro') { colorClass = 'wrong'; typeText = 'erro'; }
+                        else { colorClass = 'no-bet'; typeText = 'não palpitou'; points = 0; }
+                    } else {
+                        colorClass = 'no-bet';
+                        typeText = 'não palpitou';
+                        points = 0;
+                    }
+                    
+                    allMatchDetails.push({
+                        match: match,
+                        detail: detail,
+                        colorClass: colorClass,
+                        typeText: typeText,
+                        points: points,
+                        bet: detail?.bet || '? x ?',
+                        real: detail?.real || `${results[matchId].home}x${results[matchId].away}`
+                    });
+                }
+            }
+        }
+        
+        // Ordenar por data (mais recentes primeiro)
+        allMatchDetails.sort((a, b) => {
+            if (!a.match.date) return 1;
+            if (!b.match.date) return -1;
+            const [dayA, monthA, yearA] = a.match.date.split('/');
+            const [dayB, monthB, yearB] = b.match.date.split('/');
+            const dateA = new Date(yearA, monthA - 1, dayA);
+            const dateB = new Date(yearB, monthB - 1, dayB);
+            return dateB - dateA;
+        });
+        
+        const detailsHtml = allMatchDetails.map(item => {
+            return `<div class="detail-item ${item.colorClass}">🎮 ${item.match.home} vs ${item.match.away} | Palpite: ${item.bet} | Resultado: ${item.real} → +${item.points} pts (${item.typeText})</div>`;
+        }).join('');
+        
+        return `
+            <div class="user-item">
+                <div class="user-info">
+                    <strong>👤 ${user.username}</strong>
+                    <div class="user-points">🏆 TOTAL: ${user.points} pontos</div>
+                    <div class="points-detail">${detailsHtml || '📝 Nenhum resultado registrado ainda'}</div>
+                </div>
+                <div class="user-actions">
+                    <button class="view-profile-btn" onclick="viewProfile('${user.username}')">👁️ VER PERFIL</button>
+                    <button onclick="deleteUser('${user.username}')" style="background:#8B0000">🗑️ REMOVER</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+        window.viewProfile = function(username) {
+            window.location.href = `/profile.html?user=${encodeURIComponent(username)}&from=admin`;
+        };
+
+        async function addMatch() {
+            const dateInput = document.getElementById('newDate').value;
+            let formattedDate = '';
+            if (dateInput) {
+                const [year, month, day] = dateInput.split('-');
+                formattedDate = `${day}/${month}/${year}`;
+            }
+            
+            const match = {
+                home: document.getElementById('newHome').value,
+                away: document.getElementById('newAway').value,
+                homeFlag: document.getElementById('homeFlagDisplay').src,
+                awayFlag: document.getElementById('awayFlagDisplay').src,
+                date: formattedDate,
+                time: document.getElementById('newTime').value || '--:--'
+            };
+            if (!match.home || !match.away) { alert('Preencha os times!'); return; }
+            
+            const response = await fetch(`${API_URL}/admin/add-match`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ match })
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Jogo adicionado!');
+                document.getElementById('newHome').value = '';
+                document.getElementById('newAway').value = '';
+                document.getElementById('newDate').value = '';
+                document.getElementById('newTime').value = '';
+                await loadMatches();
+                await loadUsers();
+            } else alert('Erro: ' + data.error);
+        }
+        
+        async function deleteMatch(matchId) {
+            if (!confirm('Remover este jogo? Isso também remove todos os palpites relacionados.')) return;
+            const response = await fetch(`${API_URL}/admin/delete-match/${matchId}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) { 
+                alert('Jogo e palpites removidos!'); 
+                await loadMatches();
+                await loadUsers();
+            } else alert('Erro ao remover');
+        }
+        
+        async function deleteUser(username) {
+            if (!confirm(`Remover o membro "${username}"? Esta ação não pode ser desfeita.`)) return;
+            const response = await fetch(`${API_URL}/admin/delete-user/${username}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) { 
+                alert('Membro removido!'); 
+                await loadUsers(); 
+                await loadMatches();
+            } else alert('Erro ao remover');
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = '/';
+        }
+
+        function goToMembros() {
+            window.location.href = '/';
+        }
+
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            loadMatches();
+            loadUsers();
+        }
+
+        document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
+        document.getElementById('addMatchBtn').addEventListener('click', addMatch);
+        document.getElementById('btnSair').addEventListener('click', logout);
+        document.getElementById('btnMembros').addEventListener('click', goToMembros);
+        document.getElementById('viewAllMatchesBtn').addEventListener('click', openAllMatchesModal);
+        document.getElementById('flagPickerOverlay').addEventListener('click', closeFlagPicker);
+        document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') adminLogin(); });
+        
+        setupAutoSearch('newHome', 'homeFlagDisplay', 'homeSuggestions');
+        setupAutoSearch('newAway', 'awayFlagDisplay', 'awaySuggestions');
+    </script>
+</body>
+</html>
