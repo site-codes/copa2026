@@ -1,5 +1,5 @@
 // Configuração dinâmica da API
-let API_URL = '/api';
+let API_URL = 'https://copa2026-7exh.onrender.com/api';
 let currentUser = localStorage.getItem('currentUser');
 
 async function loadApiConfig() {
