@@ -1,4 +1,7 @@
-const API_URL = 'http://localhost:3000/api';
+// Detecta automaticamente se está local ou produção
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000/api'
+    : 'https://copa2026-cs7y.onrender.com/api';
 let currentUser = localStorage.getItem('currentUser');
 
 function displayCurrentDate() {
