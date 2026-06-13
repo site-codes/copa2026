@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // String de conexão SIMPLES
-const MONGODB_URI = 'mongodb+srv://mattheusoficial44_db_user:uiHvOndEbcaqPcZ1@copa2026.b2jsqdd.mongodb.net/?retryWrites=true&w=majority';
+const MONGODB_URI = 'mongodb://mattheusoficial44_db_user:uiHvOndEbcaqPcZ1@copa2026-shard-00-00.b2jsqdd.mongodb.net:27017,copa2026-shard-00-01.b2jsqdd.mongodb.net:27017,copa2026-shard-00-02.b2jsqdd.mongodb.net:27017/?ssl=true&replicaSet=atlas-wys4gu-shard-0&authSource=admin&retryWrites=true&w=majority';
 const DB_NAME = 'copa2026';
 
 let db;
@@ -176,6 +176,15 @@ async function calculateDetailedPoints() {
 }
 
 // ============= ROTAS =============
+
+// Rota de configuração - envia a URL base para o frontend
+app.get('/api/config', (req, res) => {
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    res.json({
+        success: true,
+        apiUrl: `${baseUrl}/api`
+    });
+});
 
 app.get('/api/matches', async (req, res) => {
     const matches = await getMatches();

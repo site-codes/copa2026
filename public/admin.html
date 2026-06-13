@@ -15,32 +15,15 @@
         .view-all-btn { background: linear-gradient(135deg, #4f46e5, #4338ca); }
         .view-all-btn:hover { background: linear-gradient(135deg, #4338ca, #3730a3); }
         
-        .match-item {
-            transition: all 0.3s ease;
-        }
+        .match-item { transition: all 0.3s ease; }
         .match-item.has-result {
             border-left: 4px solid #3b82f6;
-            border-right: 1px solid var(--border-color);
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
             background: rgba(59, 130, 246, 0.05);
-        }
-        .match-item.has-result:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-left-color: #60a5fa;
         }
         .match-item.no-result {
             border-left: 4px solid #f97316;
-            border-right: 1px solid var(--border-color);
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
             background: rgba(249, 115, 22, 0.05);
         }
-        .match-item.no-result:hover {
-            background: rgba(249, 115, 22, 0.1);
-            border-left-color: #fb923c;
-        }
-        
         .match-score.has-result-score {
             color: #ffffff;
             font-weight: bold;
@@ -48,39 +31,19 @@
             padding: 4px 10px;
             border-radius: 20px;
         }
-        .match-score.no-result-score {
-            color: var(--text-secondary);
-            font-weight: normal;
-        }
+        .match-score.no-result-score { color: var(--text-secondary); }
         
         .all-matches-modal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 3000;
+            display: flex; justify-content: center; align-items: center; z-index: 3000;
         }
         .all-matches-modal-content {
             background: linear-gradient(135deg, #111827, #0f172a);
             border-radius: 24px; padding: 30px; width: 90%; max-width: 900px;
             max-height: 85vh; overflow-y: auto;
-            border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
         }
-        .all-matches-modal-content h3 {
-            margin-bottom: 20px; color: var(--primary-color);
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .all-matches-list {
-            max-height: 65vh;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        .close-modal-btn {
-            background: var(--danger);
-            padding: 8px 20px;
-        }
-        
         .edit-modal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px);
@@ -89,36 +52,35 @@
         .edit-modal-content {
             background: linear-gradient(135deg, #111827, #0f172a);
             border-radius: 24px; padding: 30px; width: 90%; max-width: 500px;
-            border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
         }
-        .edit-modal-content h3 { margin-bottom: 20px; color: var(--primary-color); }
-        .edit-modal-content label { display: block; margin: 15px 0 5px; font-size: 0.8rem; color: var(--text-secondary); }
         .score-row { display: flex; gap: 15px; margin: 15px 0; }
         .score-row div { flex: 1; }
-        .score-row input { text-align: center; font-size: 1.2rem; font-weight: bold; }
-        .edit-modal-actions { display: flex; gap: 10px; margin-top: 25px; }
-        .edit-modal-actions button { flex: 1; }
         .save-edit-btn { background: var(--success); }
         .cancel-edit-btn { background: var(--danger); }
-        
         .current-user-rank {
             background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(6, 182, 212, 0.1));
-            border: 1px solid var(--primary); box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+            border: 1px solid var(--primary);
         }
         .rank-number.top-1 { color: #ffd700; text-shadow: 0 0 5px #ffd700; }
         .rank-number.top-2 { color: #c0c0c0; }
         .rank-number.top-3 { color: #cd7f32; }
+        .matches-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         
-        .user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        
-        .matches-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
+        .flag-picker {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #1e3a36; border-radius: 1rem; padding: 20px; z-index: 2000;
+            max-width: 800px; width: 90%; max-height: 80vh; display: none;
+            overflow-y: auto;
         }
+        .flags-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+        .flag-option { padding: 10px; cursor: pointer; border-radius: 0.5rem; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); }
+        .flag-option:hover { background: rgba(255,215,0,0.3); }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1999; display: none; }
+        .auto-suggest { position: absolute; background: #1e3a36; border-radius: 1rem; max-height: 200px; overflow-y: auto; z-index: 100; width: calc(100% - 80px); margin-left: 50px; }
+        .suggest-item { padding: 8px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .suggest-item:hover { background: rgba(255,215,0,0.3); }
+        .position-relative { position: relative; }
     </style>
 </head>
 <body>
@@ -126,15 +88,15 @@
         <div class="login-box">
             <h2>🔐 Área Restrita</h2>
             <input type="password" id="adminPassword" placeholder="Senha do Admin">
-            <button id="adminLoginBtn" style="margin-top: 20px;">Entrar</button>
-            <div class="small-note" style="margin-top: 10px;">Senha padrão: admin123</div>
+            <button id="adminLoginBtn">Entrar</button>
+            <div class="small-note">Senha padrão: admin123</div>
         </div>
     </div>
 
     <div id="adminContent" style="display: none;">
         <div class="admin-container">
             <div class="admin-header">
-                <div class="header glass-card" style="flex:1; margin-right: 20px;">
+                <div class="header glass-card">
                     <h1>🛠️ Painel do Administrador</h1>
                     <div class="sub">Gerenciar jogos, resultados e membros</div>
                 </div>
@@ -169,13 +131,13 @@
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <input type="date" id="newDate">
                     <input type="time" id="newTime">
-                    <button id="addMatchBtn" style="background: #4CAF50;">➕ ADICIONAR JOGO</button>
+                    <button id="addMatchBtn">➕ ADICIONAR JOGO</button>
                 </div>
             </div>
 
-            <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+            <div class="glass-card">
                 <div class="matches-header">
-                    <div class="section-title" style="margin-bottom: 0;">📋 ÚLTIMOS 10 JOGOS</div>
+                    <div class="section-title">📋 ÚLTIMOS 10 JOGOS</div>
                     <button id="viewAllMatchesBtn" class="view-all-btn">📊 VER TODOS OS JOGOS</button>
                 </div>
                 <div id="matchesListAdmin"></div>
@@ -195,10 +157,9 @@
     </div>
 
     <script>
-const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-    ? 'http://localhost:3000/api' 
-    : 'https://copa2026-cs7y.onrender.com/api';
+        let API_URL = '/api';
         let currentPickerType = null;
+        let currentMatches = [];
         
          const teamsData = [
         { flag: "https://flagcdn.com/w320/ca.png", name: "Canadá" },
@@ -256,9 +217,15 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
         { flag: "https://flagcdn.com/w320/uz.png", name: "Uzbequistão" }
     ];
 
-        
         const FALLBACK_FLAG = "https://flagcdn.com/w320/un.png";
-        let currentMatches = [];
+
+        async function loadApiConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                if (data.success) API_URL = data.apiUrl;
+            } catch (error) {}
+        }
 
         function openFlagPicker(type) {
             currentPickerType = type;
@@ -298,7 +265,6 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
 
         function setupAutoSearch(inputId, flagDisplayId, suggestionsId) {
             const input = document.getElementById(inputId);
-            const flagDisplay = document.getElementById(flagDisplayId);
             const suggestionsDiv = document.getElementById(suggestionsId);
             
             input.addEventListener('input', function() {
@@ -369,31 +335,6 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
             return new Date(year, month - 1, day, hour, minute);
         }
 
-        function renderMatchItem(match, hasResult, currentResult, formattedDateForInput, results) {
-            const resultClass = hasResult ? 'has-result' : 'no-result';
-            const scoreClass = hasResult ? 'has-result-score' : 'no-result-score';
-            const scoreDisplay = hasResult ? `${currentResult.home} x ${currentResult.away}` : '? x ?';
-            
-            return `
-                <div class="match-item ${resultClass}">
-                    <div class="match-info">
-                        <div class="team-flags">
-                            <strong>${match.home}</strong>
-                            <img src="${match.homeFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
-                            <span class="match-score ${scoreClass}">${scoreDisplay}</span>
-                            <img src="${match.awayFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
-                            <strong>${match.away}</strong>
-                        </div>
-                        <div>📅 ${match.date || 'Data não definida'} às ${match.time || '--:--'}</div>
-                    </div>
-                    <div class="match-actions">
-                        <button class="edit-match-btn" onclick="openEditModal('${match.id}', '${match.home}', '${match.away}', '${match.homeFlag}', '${match.awayFlag}', '${formattedDateForInput}', '${match.time || ''}', ${hasResult ? currentResult.home : 'null'}, ${hasResult ? currentResult.away : 'null'})">✏️ EDITAR JOGO</button>
-                        <button onclick="deleteMatch('${match.id}')" class="delete-match-btn">🗑️ REMOVER JOGO</button>
-                    </div>
-                </div>
-            `;
-        }
-
         async function renderMatchesList(matches) {
             const container = document.getElementById('matchesListAdmin');
             const resultsRes = await fetch(`${API_URL}/results`);
@@ -406,27 +347,44 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
                 const dateB = parseMatchDate(b);
                 return dateB - dateA;
             });
-            
             const last10Matches = sortedMatches.slice(0, 10);
             
             container.innerHTML = last10Matches.map(match => {
                 const hasResult = results[match.id];
                 const currentResult = hasResult ? results[match.id] : null;
-                
                 let formattedDateForInput = '';
                 if (match.date) {
                     const [day, month, year] = match.date.split('/');
                     formattedDateForInput = `${year}-${month}-${day}`;
                 }
+                const resultClass = hasResult ? 'has-result' : 'no-result';
+                const scoreClass = hasResult ? 'has-result-score' : 'no-result-score';
+                const scoreDisplay = hasResult ? `${currentResult.home} x ${currentResult.away}` : '? x ?';
                 
-                return renderMatchItem(match, hasResult, currentResult, formattedDateForInput, results);
+                return `
+                    <div class="match-item ${resultClass}">
+                        <div class="match-info">
+                            <div class="team-flags">
+                                <strong>${match.home}</strong>
+                                <img src="${match.homeFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
+                                <span class="match-score ${scoreClass}">${scoreDisplay}</span>
+                                <img src="${match.awayFlag || FALLBACK_FLAG}" onerror="this.src='${FALLBACK_FLAG}'">
+                                <strong>${match.away}</strong>
+                            </div>
+                            <div>📅 ${match.date || 'Data não definida'} às ${match.time || '--:--'}</div>
+                        </div>
+                        <div class="match-actions">
+                            <button class="edit-match-btn" onclick="openEditModal('${match.id}', '${match.home}', '${match.away}', '${match.homeFlag}', '${match.awayFlag}', '${formattedDateForInput}', '${match.time || ''}', ${hasResult ? currentResult.home : 'null'}, ${hasResult ? currentResult.away : 'null'})">✏️ EDITAR JOGO</button>
+                            <button onclick="deleteMatch('${match.id}')" class="delete-match-btn">🗑️ REMOVER JOGO</button>
+                        </div>
+                    </div>
+                `;
             }).join('');
         }
 
         window.openAllMatchesModal = async function() {
             const resultsRes = await fetch(`${API_URL}/results`);
             const results = (await resultsRes.json()).results || {};
-            
             const sortedMatches = [...currentMatches].sort((a, b) => {
                 const dateA = parseMatchDate(a);
                 const dateB = parseMatchDate(b);
@@ -435,18 +393,15 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
             
             const modal = document.createElement('div');
             modal.className = 'all-matches-modal';
-            
             let matchesHtml = '';
             sortedMatches.forEach(match => {
                 const hasResult = results[match.id];
                 const currentResult = hasResult ? results[match.id] : null;
-                
                 let formattedDateForInput = '';
                 if (match.date) {
                     const [day, month, year] = match.date.split('/');
                     formattedDateForInput = `${year}-${month}-${day}`;
                 }
-                
                 const resultClass = hasResult ? 'has-result' : 'no-result';
                 const scoreClass = hasResult ? 'has-result-score' : 'no-result-score';
                 const scoreDisplay = hasResult ? `${currentResult.home} x ${currentResult.away}` : '? x ?';
@@ -473,13 +428,8 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
             
             modal.innerHTML = `
                 <div class="all-matches-modal-content">
-                    <h3>
-                        📋 TODOS OS JOGOS CADASTRADOS (${sortedMatches.length})
-                        <button class="close-modal-btn" onclick="this.closest('.all-matches-modal').remove()">✕ FECHAR</button>
-                    </h3>
-                    <div class="all-matches-list">
-                        ${matchesHtml || '<div class="warning">Nenhum jogo cadastrado</div>'}
-                    </div>
+                    <h3>📋 TODOS OS JOGOS CADASTRADOS (${sortedMatches.length}) <button class="close-modal-btn" onclick="this.closest('.all-matches-modal').remove()">✕ FECHAR</button></h3>
+                    <div class="all-matches-list">${matchesHtml || '<div class="warning">Nenhum jogo cadastrado</div>'}</div>
                 </div>
             `;
             document.body.appendChild(modal);
@@ -491,15 +441,15 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
         };
         
         window.deleteMatchFromModal = async function(matchId) {
-            if (!confirm('Remover este jogo? Isso também remove todos os palpites relacionados.')) return;
+            if (!confirm('Remover este jogo?')) return;
             const response = await fetch(`${API_URL}/admin/delete-match/${matchId}`, { method: 'DELETE' });
             const data = await response.json();
             if (data.success) { 
-                alert('Jogo e palpites removidos!'); 
+                alert('Jogo removido!'); 
                 document.querySelector('.all-matches-modal')?.remove();
                 await loadMatches();
                 await loadUsers();
-            } else alert('Erro ao remover');
+            }
         };
 
         window.openEditModal = function(id, home, away, homeFlag, awayFlag, date, time, currentHomeScore, currentAwayScore) {
@@ -509,14 +459,14 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
                 <div class="edit-modal-content">
                     <h3>✏️ Editar Jogo</h3>
                     <label>🏠 TIME DA CASA</label>
-                    <input type="text" id="editHome" placeholder="Time da Casa" value="${home}">
+                    <input type="text" id="editHome" value="${home}">
                     <label>✈️ TIME VISITANTE</label>
-                    <input type="text" id="editAway" placeholder="Time Visitante" value="${away}">
+                    <input type="text" id="editAway" value="${away}">
                     <label>📅 DATA</label>
                     <input type="date" id="editDate" value="${date}">
                     <label>⏰ HORA</label>
                     <input type="time" id="editTime" value="${time}">
-                    <label>🏆 PLACAR (opcional - deixe vazio se não houver resultado)</label>
+                    <label>🏆 PLACAR</label>
                     <div class="score-row">
                         <div><input type="number" id="editHomeScore" placeholder="Gols Casa" min="0" value="${currentHomeScore !== 'null' ? currentHomeScore : ''}"></div>
                         <div><input type="number" id="editAwayScore" placeholder="Gols Fora" min="0" value="${currentAwayScore !== 'null' ? currentAwayScore : ''}"></div>
@@ -544,119 +494,90 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
                 formattedDate = `${day}/${month}/${year}`;
             }
             
-            const updateResponse = await fetch(`${API_URL}/admin/update-match/${id}`, {
+            await fetch(`${API_URL}/admin/update-match/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ home, away, date: formattedDate, time })
             });
             
-            const updateData = await updateResponse.json();
-            if (!updateData.success) {
-                alert('❌ Erro ao atualizar jogo: ' + updateData.error);
-                return;
-            }
-            
             if (homeScore !== '' && awayScore !== '') {
-                const resultResponse = await fetch(`${API_URL}/admin/result`, {
+                await fetch(`${API_URL}/admin/result`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ matchId: id, homeScore: parseInt(homeScore), awayScore: parseInt(awayScore) })
                 });
-                const resultData = await resultResponse.json();
-                if (!resultData.success) {
-                    alert('⚠️ Jogo atualizado, mas erro ao registrar resultado: ' + resultData.error);
-                } else {
-                    alert('✅ Jogo e resultado atualizados com sucesso!');
-                }
-            } else {
-                alert('✅ Jogo atualizado com sucesso!');
             }
             
+            alert('✅ Jogo atualizado!');
             document.querySelector('.edit-modal')?.remove();
             await loadMatches();
             await loadUsers();
         };
-async function renderUsersList(users, ranking) {
-    const container = document.getElementById('usersListAdmin');
-    if (!users.length) { container.innerHTML = '<div class="warning">Nenhum membro cadastrado</div>'; return; }
-    
-    const currentMatchIds = currentMatches.map(m => m.id);
-    const resultsRes = await fetch(`${API_URL}/results`);
-    const results = (await resultsRes.json()).results || {};
-    
-    container.innerHTML = ranking.map(user => {
-        const details = user.details || {};
-        
-        // Criar lista de todos os jogos com resultado
-        const allMatchDetails = [];
-        
-        for (const matchId in results) {
-            if (currentMatchIds.includes(matchId)) {
-                const detail = details[matchId];
-                const match = currentMatches.find(m => m.id === matchId);
+
+        async function renderUsersList(users, ranking) {
+            const container = document.getElementById('usersListAdmin');
+            if (!users.length) { container.innerHTML = '<div class="warning">Nenhum membro cadastrado</div>'; return; }
+            
+            const currentMatchIds = currentMatches.map(m => m.id);
+            const resultsRes = await fetch(`${API_URL}/results`);
+            const results = (await resultsRes.json()).results || {};
+            
+            container.innerHTML = ranking.map(user => {
+                const details = user.details || {};
+                const allMatchDetails = [];
                 
-                if (match) {
-                    let colorClass = '';
-                    let typeText = '';
-                    let points = 0;
-                    
-                    if (detail) {
-                        points = detail.points || 0;
-                        if (detail.type === 'exato') { colorClass = 'correct'; typeText = 'exato'; }
-                        else if (detail.type === 'vencedor') { colorClass = 'partial'; typeText = 'vencedor'; }
-                        else if (detail.type === 'diferenca') { colorClass = 'partial'; typeText = 'diferenca'; }
-                        else if (detail.type === 'erro') { colorClass = 'wrong'; typeText = 'erro'; }
-                        else { colorClass = 'no-bet'; typeText = 'não palpitou'; points = 0; }
-                    } else {
-                        colorClass = 'no-bet';
-                        typeText = 'não palpitou';
-                        points = 0;
+                for (const matchId in results) {
+                    if (currentMatchIds.includes(matchId)) {
+                        const detail = details[matchId];
+                        const match = currentMatches.find(m => m.id === matchId);
+                        if (match) {
+                            let colorClass = '', typeText = '', points = 0;
+                            if (detail) {
+                                points = detail.points || 0;
+                                if (detail.type === 'exato') { colorClass = 'correct'; typeText = 'exato'; }
+                                else if (detail.type === 'vencedor') { colorClass = 'partial'; typeText = 'vencedor'; }
+                                else if (detail.type === 'diferenca') { colorClass = 'partial'; typeText = 'diferenca'; }
+                                else { colorClass = 'wrong'; typeText = 'erro'; }
+                            } else {
+                                colorClass = 'no-bet'; typeText = 'não palpitou';
+                            }
+                            allMatchDetails.push({
+                                match, colorClass, typeText, points,
+                                bet: detail?.bet || '? x ?',
+                                real: detail?.real || `${results[matchId].home}x${results[matchId].away}`
+                            });
+                        }
                     }
-                    
-                    allMatchDetails.push({
-                        match: match,
-                        detail: detail,
-                        colorClass: colorClass,
-                        typeText: typeText,
-                        points: points,
-                        bet: detail?.bet || '? x ?',
-                        real: detail?.real || `${results[matchId].home}x${results[matchId].away}`
-                    });
                 }
-            }
+                
+                allMatchDetails.sort((a, b) => {
+                    if (!a.match.date) return 1;
+                    if (!b.match.date) return -1;
+                    const [dayA, monthA, yearA] = a.match.date.split('/');
+                    const [dayB, monthB, yearB] = b.match.date.split('/');
+                    return new Date(yearB, monthB-1, dayB) - new Date(yearA, monthA-1, dayA);
+                });
+                
+                const detailsHtml = allMatchDetails.map(item => 
+                    `<div class="detail-item ${item.colorClass}">🎮 ${item.match.home} vs ${item.match.away} | Palpite: ${item.bet} | Resultado: ${item.real} → +${item.points} pts (${item.typeText})</div>`
+                ).join('');
+                
+                return `
+                    <div class="user-item">
+                        <div class="user-info">
+                            <strong>👤 ${user.username}</strong>
+                            <div class="user-points">🏆 TOTAL: ${user.points} pontos</div>
+                            <div class="points-detail">${detailsHtml || '📝 Nenhum resultado'}</div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="view-profile-btn" onclick="viewProfile('${user.username}')">👁️ VER PERFIL</button>
+                            <button onclick="deleteUser('${user.username}')" style="background:#8B0000">🗑️ REMOVER</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
         
-        // Ordenar por data (mais recentes primeiro)
-        allMatchDetails.sort((a, b) => {
-            if (!a.match.date) return 1;
-            if (!b.match.date) return -1;
-            const [dayA, monthA, yearA] = a.match.date.split('/');
-            const [dayB, monthB, yearB] = b.match.date.split('/');
-            const dateA = new Date(yearA, monthA - 1, dayA);
-            const dateB = new Date(yearB, monthB - 1, dayB);
-            return dateB - dateA;
-        });
-        
-        const detailsHtml = allMatchDetails.map(item => {
-            return `<div class="detail-item ${item.colorClass}">🎮 ${item.match.home} vs ${item.match.away} | Palpite: ${item.bet} | Resultado: ${item.real} → +${item.points} pts (${item.typeText})</div>`;
-        }).join('');
-        
-        return `
-            <div class="user-item">
-                <div class="user-info">
-                    <strong>👤 ${user.username}</strong>
-                    <div class="user-points">🏆 TOTAL: ${user.points} pontos</div>
-                    <div class="points-detail">${detailsHtml || '📝 Nenhum resultado registrado ainda'}</div>
-                </div>
-                <div class="user-actions">
-                    <button class="view-profile-btn" onclick="viewProfile('${user.username}')">👁️ VER PERFIL</button>
-                    <button onclick="deleteUser('${user.username}')" style="background:#8B0000">🗑️ REMOVER</button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
         window.viewProfile = function(username) {
             window.location.href = `/profile.html?user=${encodeURIComponent(username)}&from=admin`;
         };
@@ -693,29 +614,29 @@ async function renderUsersList(users, ranking) {
                 document.getElementById('newTime').value = '';
                 await loadMatches();
                 await loadUsers();
-            } else alert('Erro: ' + data.error);
+            }
         }
         
         async function deleteMatch(matchId) {
-            if (!confirm('Remover este jogo? Isso também remove todos os palpites relacionados.')) return;
+            if (!confirm('Remover este jogo?')) return;
             const response = await fetch(`${API_URL}/admin/delete-match/${matchId}`, { method: 'DELETE' });
             const data = await response.json();
             if (data.success) { 
-                alert('Jogo e palpites removidos!'); 
+                alert('Jogo removido!'); 
                 await loadMatches();
                 await loadUsers();
-            } else alert('Erro ao remover');
+            }
         }
         
         async function deleteUser(username) {
-            if (!confirm(`Remover o membro "${username}"? Esta ação não pode ser desfeita.`)) return;
+            if (!confirm(`Remover "${username}"?`)) return;
             const response = await fetch(`${API_URL}/admin/delete-user/${username}`, { method: 'DELETE' });
             const data = await response.json();
             if (data.success) { 
                 alert('Membro removido!'); 
                 await loadUsers(); 
                 await loadMatches();
-            } else alert('Erro ao remover');
+            }
         }
 
         function logout() {
@@ -727,11 +648,14 @@ async function renderUsersList(users, ranking) {
             window.location.href = '/';
         }
 
-        if (localStorage.getItem('adminLoggedIn') === 'true') {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block';
-            loadMatches();
-            loadUsers();
+        async function initAdmin() {
+            await loadApiConfig();
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                await loadMatches();
+                await loadUsers();
+            }
         }
 
         document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
@@ -744,6 +668,8 @@ async function renderUsersList(users, ranking) {
         
         setupAutoSearch('newHome', 'homeFlagDisplay', 'homeSuggestions');
         setupAutoSearch('newAway', 'awayFlagDisplay', 'awaySuggestions');
+        
+        initAdmin();
     </script>
 </body>
 </html>

@@ -1,8 +1,19 @@
-// Detecta automaticamente se está local ou produção
-const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:3000/api'
-    : 'https://copa2026-cs7y.onrender.com/api';
+// Configuração dinâmica da API
+let API_URL = '/api';
 let currentUser = localStorage.getItem('currentUser');
+
+async function loadApiConfig() {
+    try {
+        const response = await fetch('/api/config');
+        const data = await response.json();
+        if (data.success) {
+            API_URL = data.apiUrl;
+            console.log('✅ API configurada:', API_URL);
+        }
+    } catch (error) {
+        console.log('⚠️ Usando fallback:', API_URL);
+    }
+}
 
 function displayCurrentDate() {
     const hoje = new Date();
@@ -17,7 +28,7 @@ async function apiRequest(endpoint, options = {}) {
         });
         return await response.json();
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro na API:', error);
         return { success: false, error: 'Erro de conexão' };
     }
 }
@@ -216,64 +227,62 @@ async function renderBetsAndResults() {
     const orderedUsers = currentUserData ? [currentUserData, ...otherUsers] : ranking;
 
     container.innerHTML = orderedUsers.map(user => {
-        // Mostrar TODOS os jogos (com ou sem palpite)
-        const allMatchesInfo = matches.map(match => {
-            const bet = allBets[match.id]?.[user.username];
-            const result = results[match.id];
-            const hasBet = !!bet;
-            const hasResult = !!result;
+        const userBetsList = [];
 
-            let statusIcon = '⏳';
-            let statusText = 'Aguardando resultado';
-            let statusClass = 'pending';
+        for (const matchId in allBets) {
+            if (allBets[matchId][user.username]) {
+                const match = matches.find(m => m.id === matchId);
+                const bet = allBets[matchId][user.username];
+                const result = results[matchId];
 
-            if (!hasBet && hasResult) {
-                // Não palpitou em jogo que já tem resultado
-                statusIcon = '❌';
-                statusText = 'NÃO PALPITOU! 0pts';
-                statusClass = 'no-bet';
-            } else if (hasBet && hasResult) {
-                // Tem palpite e tem resultado - verificar acerto
-                const accuracy = checkBetAccuracy(bet, result);
-                if (accuracy === 'exact') { statusIcon = '✅'; statusText = `EXATO! ${bet.home}x${bet.away} = ${result.home}x${result.away} +10pts`; statusClass = 'exact'; }
-                else if (accuracy === 'winner') { statusIcon = '🎯'; statusText = `VENCEDOR! Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away} +5pts`; statusClass = 'winner'; }
-                else if (accuracy === 'diff') { statusIcon = '📊'; statusText = `DIFERENÇA! Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away} +2pts`; statusClass = 'diff'; }
-                else { statusIcon = '❌'; statusText = `ERROU! Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away} 0pts`; statusClass = 'wrong'; }
-            } else if (hasBet && !hasResult) {
-                // Tem palpite mas aguarda resultado
-                statusIcon = '⏳';
-                statusText = `Palpite: ${bet.home} x ${bet.away}`;
-                statusClass = 'pending';
-            } else {
-                // Não tem palpite e não tem resultado
-                statusIcon = '⚪';
-                statusText = 'Sem palpite';
-                statusClass = 'no-bet';
+                if (match) {
+                    let statusIcon = '⏳';
+                    let statusText = `Palpite: ${bet.home} x ${bet.away}`;
+                    let statusClass = 'pending';
+
+                    if (result) {
+                        const accuracy = checkBetAccuracy(bet, result);
+                        if (accuracy === 'exact') { statusIcon = '✅'; statusText = `EXATO! ${bet.home}x${bet.away} = ${result.home}x${result.away} +10pts`; statusClass = 'exact'; }
+                        else if (accuracy === 'winner') { statusIcon = '🎯'; statusText = `VENCEDOR! Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away} +5pts`; statusClass = 'winner'; }
+                        else if (accuracy === 'diff') { statusIcon = '📊'; statusText = `DIFERENÇA! Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away} +2pts`; statusClass = 'diff'; }
+                        else { statusIcon = '❌'; statusText = `ERROU! Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away} 0pts`; statusClass = 'wrong'; }
+                    }
+
+                    userBetsList.push({
+                        match: match,
+                        statusIcon: statusIcon,
+                        statusText: statusText,
+                        statusClass: statusClass,
+                        bet: bet,
+                        result: result
+                    });
+                }
             }
+        }
 
-            return {
-                match: match,
-                statusIcon: statusIcon,
-                statusText: statusText,
-                statusClass: statusClass,
-                hasBet: hasBet,
-                hasResult: hasResult,
-                bet: bet
-            };
+        userBetsList.sort((a, b) => {
+            if (!a.match.date) return 1;
+            if (!b.match.date) return -1;
+            const [dayA, monthA, yearA] = a.match.date.split('/');
+            const [dayB, monthB, yearB] = b.match.date.split('/');
+            const dateA = new Date(yearA, monthA - 1, dayA);
+            const dateB = new Date(yearB, monthB - 1, dayB);
+            return dateB - dateA;
         });
 
-        // Filtrar apenas jogos que já tem resultado OU que são de hoje
-        const relevantMatches = allMatchesInfo.filter(info => info.hasResult || isTodayMatch(info.match.date));
+        const lastThreeBets = userBetsList.slice(0, 3);
+        const isCurrentUserCard = user.username === currentUser;
+        const cardClass = isCurrentUserCard ? 'member-card current-user-card' : 'member-card';
 
-        if (relevantMatches.length === 0) {
+        if (lastThreeBets.length === 0) {
             return `
-                <div class="member-card">
+                <div class="${cardClass}">
                     <div class="member-header">
-                        <strong>👤 ${user.username} ${user.username === currentUser ? '(você)' : ''}</strong>
+                        <strong>👤 ${user.username} ${isCurrentUserCard ? '(você)' : ''}</strong>
                         <span class="member-points">🏆 ${user.points} pts</span>
                     </div>
                     <div class="member-bets">
-                        <div class="no-bets">Nenhum resultado disponível ainda</div>
+                        <div class="no-bets">Nenhum palpite registrado ainda</div>
                     </div>
                     <div class="member-footer">
                         <button class="view-all-btn" onclick="goToProfile('${user.username}')">📊 VER HISTÓRICO COMPLETO</button>
@@ -282,34 +291,32 @@ async function renderBetsAndResults() {
             `;
         }
 
-        // Pegar apenas os últimos 3
-        const lastThree = relevantMatches.slice(-3);
-
         return `
-            <div class="member-card">
+            <div class="${cardClass}">
                 <div class="member-header">
-                    <strong>👤 ${user.username} ${user.username === currentUser ? '(você)' : ''}</strong>
+                    <strong>👤 ${user.username} ${isCurrentUserCard ? '(você)' : ''}</strong>
                     <span class="member-points">🏆 ${user.points} pts</span>
                 </div>
                 <div class="member-bets">
-                    ${lastThree.map(info => `
-                        <div class="bet-item ${info.statusClass}">
+                    ${lastThreeBets.map(bet => `
+                        <div class="bet-item ${bet.statusClass}">
                             <div class="bet-match">
-                                <strong>${info.match.home}</strong>
-                                <img src="${info.match.homeFlag}" onerror="this.src='https://flagcdn.com/w320/un.png'">
-                                ${info.hasBet ? `<span class="bet-score">${info.bet.home} x ${info.bet.away}</span>` : '<span class="bet-score">? x ?</span>'}
-                                <img src="${info.match.awayFlag}" onerror="this.src='https://flagcdn.com/w320/un.png'">
-                                <strong>${info.match.away}</strong>
+                                <strong>${bet.match.home}</strong>
+                                <img src="${bet.match.homeFlag}" onerror="this.src='https://flagcdn.com/w320/un.png'">
+                                <span class="bet-score">${bet.bet.home} x ${bet.bet.away}</span>
+                                <img src="${bet.match.awayFlag}" onerror="this.src='https://flagcdn.com/w320/un.png'">
+                                <strong>${bet.match.away}</strong>
                             </div>
                             <div class="bet-result">
-                                <span class="bet-status ${info.statusClass}">${info.statusIcon} ${info.statusText}</span>
+                                <span class="bet-status ${bet.statusClass}">${bet.statusIcon} ${bet.statusText}</span>
                             </div>
                         </div>
                     `).join('')}
                 </div>
+                ${userBetsList.length > 3 ? `<div class="member-footer"><button class="view-all-btn" onclick="goToProfile('${user.username}')">📊 VER MAIS (${userBetsList.length - 3} restantes)</button></div>` : `
                 <div class="member-footer">
                     <button class="view-all-btn" onclick="goToProfile('${user.username}')">📊 VER HISTÓRICO COMPLETO</button>
-                </div>
+                </div>`}
             </div>
         `;
     }).join('');
@@ -356,12 +363,18 @@ function logout() {
     document.getElementById('usernameInput').value = '';
 }
 
-if (currentUser) {
-    document.getElementById('authContainer').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'block';
-    refreshAll();
+// Inicialização
+async function initApp() {
+    await loadApiConfig();
+    displayCurrentDate();
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+
+    if (currentUser) {
+        document.getElementById('authContainer').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        await refreshAll();
+    }
 }
 
-document.getElementById('logoutBtn')?.addEventListener('click', logout);
-displayCurrentDate();
-document.getElementById('loginBtn').addEventListener('click', doLogin);
+initApp();

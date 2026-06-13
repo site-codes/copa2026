@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         .profile-page { max-width: 1000px; margin: 0 auto; }
-        .back-home-btn { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none; padding: 10px 24px; border-radius: var(--border-radius-full); cursor: pointer; font-weight: 600; transition: all var(--transition-fast); display: inline-flex; align-items: center; gap: 8px; }
-        .back-home-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05); }
-        .back-admin-btn { background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: none; padding: 10px 24px; border-radius: var(--border-radius-full); cursor: pointer; font-weight: 600; transition: all var(--transition-fast); display: inline-flex; align-items: center; gap: 8px; }
-        .back-admin-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05); }
+        .back-home-btn { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none; padding: 10px 24px; border-radius: var(--border-radius-full); cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .back-admin-btn { background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: none; padding: 10px 24px; border-radius: var(--border-radius-full); cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .header-buttons { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .profile-stats-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-xl); }
         .all-bets-list { max-height: 500px; overflow-y: auto; }
@@ -37,27 +35,9 @@
         .stat-value { font-size: 2rem; font-weight: bold; color: var(--primary-color); }
         .stat-label { font-size: 0.7rem; color: var(--text-muted); margin-top: var(--spacing-xs); }
         
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 16px;
-            border-radius: var(--border-radius-full);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            font-size: 0.8rem;
-        }
-        .filter-btn.active {
-            background: var(--primary-color);
-            color: var(--text-dark);
-        }
-        .filter-btn:hover {
-            background: rgba(255, 111, 97, 0.5);
-        }
+        .filter-buttons { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn { background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: var(--border-radius-full); cursor: pointer; font-size: 0.8rem; }
+        .filter-btn.active { background: var(--primary-color); color: var(--text-dark); }
     </style>
 </head>
 <body>
@@ -76,11 +56,16 @@
     </div>
 
     <script>
-        const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-    ? 'http://localhost:3000/api' 
-    : 'https://copa2026-cs7y.onrender.com/api';
-    console.log('🔗 API conectada em:', API_URL);
-        let currentFilter = 'all'; // all, exact, winner, diff, wrong, no-bet
+        let API_URL = '/api';
+        let currentFilter = 'all';
+        
+        async function loadApiConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                if (data.success) API_URL = data.apiUrl;
+            } catch (error) {}
+        }
         
         function getUrlParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -111,7 +96,6 @@
             }
             
             try {
-                // Buscar todos os matches e resultados para mostrar jogos sem palpite
                 const [profileRes, matchesRes, resultsRes, allBetsRes] = await Promise.all([
                     fetch(`${API_URL}/profile/${username}`),
                     fetch(`${API_URL}/matches`),
@@ -130,14 +114,8 @@
                 }
                 
                 const profile = profileData.profile;
-                
-                // Criar lista completa de todos os jogos (com ou sem palpite)
+                let exactCount = 0, winnerCount = 0, diffCount = 0, wrongCount = 0, noBetCount = 0;
                 const allMatchesWithStatus = [];
-                let exactCount = profile.stats.exact;
-                let winnerCount = profile.stats.winner;
-                let diffCount = profile.stats.diff;
-                let wrongCount = profile.stats.wrong;
-                let noBetCount = 0;
                 
                 for (const match of matches) {
                     const hasBet = allBets[match.id] && allBets[match.id][username];
@@ -145,116 +123,70 @@
                     const result = results[match.id];
                     const hasResult = !!result;
                     
-                    let points = 0;
-                    let type = 'pendente';
-                    let statusClass = 'pending';
-                    let statusIcon = '⏳';
-                    let statusText = 'Aguardando resultado';
+                    let type = 'pendente', statusClass = 'pending', statusIcon = '⏳', statusText = 'Aguardando resultado', points = 0;
                     
                     if (hasResult) {
                         if (!hasBet) {
-                            // Não palpitou em jogo que já tem resultado
-                            type = 'nao_palpitou';
-                            statusClass = 'no-bet';
-                            statusIcon = '⚪';
-                            statusText = 'NÃO PALPITOU! 0pts';
+                            type = 'nao_palpitou'; statusClass = 'no-bet'; statusIcon = '⚪'; statusText = 'NÃO PALPITOU! 0pts';
                             noBetCount++;
                         } else {
-                            // Tem palpite e tem resultado
-                            const betHome = parseInt(bet.home);
-                            const betAway = parseInt(bet.away);
-                            const realHome = parseInt(result.home);
-                            const realAway = parseInt(result.away);
+                            const betHome = parseInt(bet.home), betAway = parseInt(bet.away);
+                            const realHome = parseInt(result.home), realAway = parseInt(result.away);
                             
                             if (betHome === realHome && betAway === realAway) {
-                                points = 10;
-                                type = 'exato';
-                                statusClass = 'exact';
-                                statusIcon = '✅';
+                                points = 10; type = 'exato'; statusClass = 'exact'; statusIcon = '✅';
                                 statusText = `EXATO! +10pts (${bet.home}x${bet.away} = ${result.home}x${result.away})`;
+                                exactCount++;
                             } else {
                                 const betWinner = betHome > betAway ? "home" : (betAway > betHome ? "away" : "draw");
                                 const realWinner = realHome > realAway ? "home" : (realAway > realHome ? "away" : "draw");
                                 
                                 if (betWinner === realWinner) {
-                                    points = 5;
-                                    type = 'vencedor';
-                                    statusClass = 'winner';
-                                    statusIcon = '🎯';
+                                    points = 5; type = 'vencedor'; statusClass = 'winner'; statusIcon = '🎯';
                                     statusText = `VENCEDOR! +5pts (Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away})`;
+                                    winnerCount++;
                                 } else {
                                     const betDiff = Math.abs(betHome - betAway);
                                     const realDiff = Math.abs(realHome - realAway);
                                     
                                     if ((betHome > betAway && realHome > realAway && betDiff === realDiff) ||
                                         (betAway > betHome && realAway > realHome && betDiff === realDiff)) {
-                                        points = 2;
-                                        type = 'diferenca';
-                                        statusClass = 'diff';
-                                        statusIcon = '📊';
+                                        points = 2; type = 'diferenca'; statusClass = 'diff'; statusIcon = '📊';
                                         statusText = `DIFERENÇA! +2pts (Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away})`;
+                                        diffCount++;
                                     } else {
-                                        points = 0;
-                                        type = 'erro';
-                                        statusClass = 'wrong';
-                                        statusIcon = '❌';
+                                        points = 0; type = 'erro'; statusClass = 'wrong'; statusIcon = '❌';
                                         statusText = `ERROU! 0pts (Palpite ${bet.home}x${bet.away} | Real ${result.home}x${result.away})`;
+                                        wrongCount++;
                                     }
                                 }
                             }
                         }
                     } else if (hasBet && !hasResult) {
-                        // Tem palpite mas aguarda resultado
-                        type = 'pendente';
-                        statusClass = 'pending';
-                        statusIcon = '⏳';
+                        type = 'pendente'; statusClass = 'pending'; statusIcon = '⏳';
                         statusText = `Aguardando resultado (Palpite: ${bet.home}x${bet.away})`;
                     } else {
-                        // Não tem palpite e não tem resultado
-                        type = 'sem_palpite';
-                        statusClass = 'pending';
-                        statusIcon = '⚪';
+                        type = 'sem_palpite'; statusClass = 'pending'; statusIcon = '⚪';
                         statusText = 'Sem palpite (aguardando jogo)';
                     }
                     
-                    allMatchesWithStatus.push({
-                        match: match,
-                        bet: bet,
-                        result: result,
-                        hasBet: hasBet,
-                        hasResult: hasResult,
-                        points: points,
-                        type: type,
-                        statusClass: statusClass,
-                        statusIcon: statusIcon,
-                        statusText: statusText
-                    });
+                    allMatchesWithStatus.push({ match, bet, result, hasBet, hasResult, points, type, statusClass, statusIcon, statusText });
                 }
                 
-                // Ordenar por data (mais recentes primeiro)
                 allMatchesWithStatus.sort((a, b) => {
                     if (!a.match.date) return 1;
                     if (!b.match.date) return -1;
                     const [dayA, monthA, yearA] = a.match.date.split('/');
                     const [dayB, monthB, yearB] = b.match.date.split('/');
-                    const dateA = new Date(yearA, monthA - 1, dayA);
-                    const dateB = new Date(yearB, monthB - 1, dayB);
-                    return dateB - dateA;
+                    return new Date(yearB, monthB-1, dayB) - new Date(yearA, monthA-1, dayA);
                 });
                 
-                // Filtrar baseado no filtro selecionado
                 let filteredMatches = allMatchesWithStatus;
-                if (currentFilter === 'exact') {
-                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'exato');
-                } else if (currentFilter === 'winner') {
-                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'vencedor');
-                } else if (currentFilter === 'diff') {
-                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'diferenca');
-                } else if (currentFilter === 'wrong') {
-                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'erro');
-                } else if (currentFilter === 'no-bet') {
-                    filteredMatches = allMatchesWithStatus.filter(m => m.type === 'nao_palpitou');
-                }
+                if (currentFilter === 'exact') filteredMatches = allMatchesWithStatus.filter(m => m.type === 'exato');
+                else if (currentFilter === 'winner') filteredMatches = allMatchesWithStatus.filter(m => m.type === 'vencedor');
+                else if (currentFilter === 'diff') filteredMatches = allMatchesWithStatus.filter(m => m.type === 'diferenca');
+                else if (currentFilter === 'wrong') filteredMatches = allMatchesWithStatus.filter(m => m.type === 'erro');
+                else if (currentFilter === 'no-bet') filteredMatches = allMatchesWithStatus.filter(m => m.type === 'nao_palpitou');
                 
                 const totalPoints = profile.totalPoints;
                 
@@ -317,7 +249,12 @@
             loadProfile();
         };
         
-        loadProfile();
+        async function initProfile() {
+            await loadApiConfig();
+            loadProfile();
+        }
+        
+        initProfile();
     </script>
 </body>
 </html>
