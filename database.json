@@ -1,0 +1,164 @@
+{
+  "users": [
+    "Gustavo",
+    "Arthur",
+    "Eduardo",
+    "Matheus",
+    "Lucas"
+  ],
+  "bets": {
+    "1781306631391": {
+      "Gustavo": {
+        "home": 2,
+        "away": 0
+      },
+      "Arthur": {
+        "home": 2,
+        "away": 2
+      },
+      "Eduardo": {
+        "home": 2,
+        "away": 1
+      },
+      "Matheus": {
+        "home": 2,
+        "away": 0
+      },
+      "Lucas": {
+        "home": 1,
+        "away": 0
+      }
+    },
+    "1781306688571": {
+      "Gustavo": {
+        "home": 1,
+        "away": 2
+      },
+      "Arthur": {
+        "home": 3,
+        "away": 0
+      },
+      "Eduardo": {
+        "home": 2,
+        "away": 0
+      },
+      "Matheus": {
+        "home": 1,
+        "away": 1
+      },
+      "Lucas": {
+        "home": 2,
+        "away": 1
+      }
+    },
+    "1781306713531": {
+      "Gustavo": null,
+      "Arthur": {
+        "home": 2,
+        "away": 0
+      },
+      "Eduardo": null,
+      "Matheus": {
+        "home": 2,
+        "away": 0
+      },
+      "Lucas": {
+        "home": 2,
+        "away": 1
+      }
+    },
+    "1781308551162": {
+      "Arthur": {
+        "home": 0,
+        "away": 2
+      },
+      "Lucas": {
+        "home": 1,
+        "away": 3
+      },
+      "Matheus": {
+        "home": 1,
+        "away": 1
+      }
+    }
+  },
+  "results": {
+    "1781306631391": {
+      "home": 2,
+      "away": 0
+    },
+    "1781306688571": {
+      "home": 2,
+      "away": 1
+    },
+    "1781306713531": {
+      "home": 1,
+      "away": 1
+    }
+  },
+  "matches": [
+    {
+      "home": "México",
+      "away": "África do Sul",
+      "homeFlag": "https://flagcdn.com/w320/mx.png",
+      "awayFlag": "https://flagcdn.com/w320/za.png",
+      "date": "11/06/2026",
+      "time": "16:00",
+      "id": "1781306631391"
+    },
+    {
+      "home": "República da Coreia",
+      "away": "Tchéquia",
+      "homeFlag": "https://flagcdn.com/w320/kr.png",
+      "awayFlag": "https://flagcdn.com/w320/cz.png",
+      "date": "11/06/2026",
+      "time": "19:00",
+      "id": "1781306688571"
+    },
+    {
+      "home": "Canadá",
+      "away": "Bósnia e Herzegovina",
+      "homeFlag": "https://flagcdn.com/w320/ca.png",
+      "awayFlag": "https://flagcdn.com/w320/ba.png",
+      "date": "12/06/2026",
+      "time": "16:00",
+      "id": "1781306713531"
+    },
+    {
+      "home": "EUA",
+      "away": "Paraguai",
+      "homeFlag": "https://flagcdn.com/w320/us.png",
+      "awayFlag": "https://flagcdn.com/w320/py.png",
+      "date": "12/06/2026",
+      "time": "22:00",
+      "id": "1781308551162"
+    },
+    {
+      "home": "Catar",
+      "away": "Suíça",
+      "homeFlag": "https://flagcdn.com/w320/qa.png",
+      "awayFlag": "https://flagcdn.com/w320/ch.png",
+      "date": "13/06/2026",
+      "time": "16:00",
+      "id": "1781308758653"
+    },
+    {
+      "home": "Brasil",
+      "away": "Marrocos",
+      "homeFlag": "https://flagcdn.com/w320/br.png",
+      "awayFlag": "https://flagcdn.com/w320/ma.png",
+      "date": "13/06/2026",
+      "time": "19:00",
+      "id": "1781308783519"
+    },
+    {
+      "home": "Haiti",
+      "away": "Escócia",
+      "homeFlag": "https://flagcdn.com/w320/ht.png",
+      "awayFlag": "https://flagcdn.com/w320/gb-sct.png",
+      "date": "13/06/2026",
+      "time": "22:00",
+      "id": "1781308810741"
+    }
+  ]
+}
