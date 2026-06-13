@@ -10,14 +10,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// ✅ SUA STRING DO MONGODB (já está correta)
+// String de conexão SIMPLES
 const MONGODB_URI = 'mongodb+srv://mattheusoficial44_db_user:uiHvOndEbcaqPcZ1@copa2026.b2jsqdd.mongodb.net/?retryWrites=true&w=majority';
 const DB_NAME = 'copa2026';
 
 let db;
 let client;
 
-// Conectar ao MongoDB
 async function connectToMongo() {
     try {
         client = new MongoClient(MONGODB_URI);
@@ -30,8 +29,9 @@ async function connectToMongo() {
         await db.collection('matches').createIndex({ id: 1 });
         await db.collection('bets').createIndex({ matchId: 1, username: 1 });
     } catch (error) {
-        console.error('❌ Erro ao conectar ao MongoDB:', error);
-        process.exit(1);
+        console.error('❌ Erro ao conectar ao MongoDB:', error.message);
+        // Tentar novamente após 5 segundos
+        setTimeout(connectToMongo, 5000);
     }
 }
 
