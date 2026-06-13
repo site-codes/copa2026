@@ -115,7 +115,37 @@ async function renderMatches() {
         return;
     }
 
-    container.innerHTML = matches.map(match => {
+    // Função para converter data DD/MM/AAAA para Date
+    function parseDate(dateStr) {
+        if (!dateStr) return null;
+        const [day, month, year] = dateStr.split('/');
+        return new Date(year, month - 1, day);
+    }
+
+    // Data atual (hoje)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Filtrar apenas jogos de hoje ou futuros
+    const upcomingMatches = matches.filter(match => {
+        const matchDate = parseDate(match.date);
+        if (!matchDate) return true; // Se não tem data, mostra
+        return matchDate >= today;
+    });
+
+    if (upcomingMatches.length === 0) {
+        container.innerHTML = '<div class="warning">📅 Nenhum jogo programado para hoje. Volte amanhã para novos palpites!</div>';
+        return;
+    }
+
+    // Ordenar por data (mais próximos primeiro)
+    upcomingMatches.sort((a, b) => {
+        const dateA = parseDate(a.date);
+        const dateB = parseDate(b.date);
+        return dateA - dateB;
+    });
+
+    container.innerHTML = upcomingMatches.map(match => {
         const existingBet = allBets[match.id]?.[currentUser];
         const hasResult = results[match.id];
         const result = results[match.id];
@@ -185,7 +215,7 @@ async function renderMatches() {
             } else alert('Erro ao salvar');
         });
     });
-}
+}   
 
 async function renderRanking() {
     const ranking = await loadRanking();
